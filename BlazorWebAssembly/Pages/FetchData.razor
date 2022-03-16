@@ -1,0 +1,91 @@
+﻿@page "/fetchdata"
+
+@using BlazorWebAssembly.Models
+@using BlazorWebAssembly.Interfaces
+@inject HttpClient Http
+@inject IWeatherForecastService weatherForecastService
+@inject IModalService modal  
+
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td style="display: none">@forecast.Id</td>
+                    <td @onmouseout="MouseOut" @onmouseover="@(() => MouseOver(@forecast))">@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                    <td><button class="btn btn-primary" @onclick="@(() => Edit(@forecast))">Edit</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (tooltip != string.Empty && showToolTip)
+    {
+        <div class="icon-button-tooltip">
+            @tooltip
+        </div>
+    }
+}
+
+@code {
+    private WeatherForecast[]? forecasts;
+
+    private string tooltip = "";
+
+    private bool showToolTip = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+
+        forecasts = await weatherForecastService.GetAllAsync();
+    }
+
+    protected void MouseOver(WeatherForecast data)
+    {
+        showToolTip = true;
+        tooltip = "DayOfWeek: " + data.Date.DayOfWeek;
+
+    }
+
+    protected void MouseOut(MouseEventArgs e)
+    {
+        showToolTip = false;
+    }
+
+    private void Edit(WeatherForecast data)
+    {
+
+        ModalParameters param = new ModalParameters();
+
+        param.Add("Data",data);
+
+        param.Add("Service",weatherForecastService);
+
+        modal.Show<EditObject>(data.GetType().Name,param);
+    }
+
+}

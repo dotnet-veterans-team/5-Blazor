@@ -1,0 +1,61 @@
+﻿
+
+
+@if (Data is null)
+{
+    <WarningMessageBox Message="@nullMessage"></WarningMessageBox>
+}
+else
+{
+    foreach (var prop in propertiesObjectList)
+    {
+        <div class="row">
+            <b>@prop.Name</b>
+            <input name="@prop.Name" type="text" @bind-value="@prop.Value" />
+        </div>
+        <br />
+    }
+
+    <button class="btn btn-primary" @onclick="EditObjectConfirm">Confirm</button>
+}
+
+
+@code {
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+
+    [Parameter] public Object Data { get; set; }
+
+    [Parameter] public dynamic Service { get; set; }
+
+    private string nullMessage = "The sent object is null";
+
+    private List<KeyVal<string, string>> propertiesObjectList;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        propertiesObjectList = new List<KeyVal<string, string>>();
+
+
+        if (Data is not null)
+        {
+            foreach (var prop in Data.GetType().GetProperties())
+            {
+                var kvp = new KeyVal<string, string> { Name = prop.Name, Value = prop.GetValue(Data, null).ToString() };
+
+                propertiesObjectList.Add(kvp);
+            }
+        }
+
+
+    }
+
+    private void EditObjectConfirm()
+    {
+        var result = Service.Update(propertiesObjectList);
+
+        ModalInstance.CloseAsync();
+
+    }
+
+}

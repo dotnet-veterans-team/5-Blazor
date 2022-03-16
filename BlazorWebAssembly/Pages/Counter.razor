@@ -1,0 +1,40 @@
+﻿@page "/counter"
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+<div class="row">
+
+    <strong>@selectIncrement</strong>
+
+    @foreach (var choice in values)
+    {
+        <label style="margin-left: 10px;">
+            <input name="yourColor" type="radio"
+                   value="@choice"
+                   checked="@(selected == choice)"
+                   @onchange="@(() => { selected = choice; })">
+            @choice.ToString()
+        </label>
+    }
+
+</div>
+
+@code {
+    private int[] values = { 1, 5, 10, 20 };
+    private int selected;
+
+    private string selectIncrement = "Select the increment value";
+
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount = currentCount + selected;
+    }
+}
